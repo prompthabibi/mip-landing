@@ -70,9 +70,9 @@ const STATS = [
 
 // ─── COMPONENTS ──────────────────────────────────────────────
 
-function AnimatedCounter({ stat }) {
+function AnimatedCounter({ stat }: { stat: { value: string; display: string; label: string } }) {
   const [text, setText] = useState("");
-  const ref = useRef(null);
+  const ref = useRef<HTMLSpanElement>(null);
   const started = useRef(false);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ function AnimatedCounter({ stat }) {
   return <span ref={ref}>{text || stat.display}</span>;
 }
 
-function Chip({ label, selected, onClick }) {
+function Chip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -134,7 +134,7 @@ function Chip({ label, selected, onClick }) {
   );
 }
 
-function Input({ label, type = "text", placeholder, value, onChange, required }) {
+function Input({ label, type = "text", placeholder, value, onChange, required }: { label: string; type?: string; placeholder?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; required?: boolean }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <label style={{
@@ -179,25 +179,25 @@ export default function MIPBetaLanding() {
     email: "",
     city: "",
     social: "",
-    software: [],
-    events: [],
-    genres: [],
+    software: [] as string[],
+    events: [] as string[],
+    genres: [] as string[],
     librarySize: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef(null);
+  const formRef = useRef<HTMLElement>(null);
 
-  const update = (field, value) => setForm((p) => ({ ...p, [field]: value }));
+  const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
 
-  const toggleChip = (field, value) => {
+  const toggleChip = (field: "software" | "events" | "genres", value: string) => {
     setForm((p) => ({
       ...p,
-      [field]: p[field].includes(value) ? p[field].filter((v) => v !== value) : [...p[field], value],
+      [field]: p[field].includes(value) ? p[field].filter((v: string) => v !== value) : [...p[field], value],
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email) return;
     setSubmitting(true);
