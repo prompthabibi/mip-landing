@@ -1,658 +1,349 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-// ─── CONFIG (one-variable rebrand) ───────────────────────────
-const BRAND = {
-  name: "MIP",
-  full: "Music Intelligence Platform",
-  tagline: "Your DJ software cleans metadata. MIP understands it.",
-  subtitle: "The intelligence layer for open-format, wedding, and multicultural event DJs.",
-  cta: "Join the Beta",
-  accent: "#E06B8E",
-  accentDark: "#C9527A",
-  accentLight: "#F2B5C8",
-  accentGlow: "rgba(224, 107, 142, 0.12)",
-  accentGlow2: "rgba(224, 107, 142, 0.25)",
-  handle: "@djofresh",
-};
+export default function Home() {
+  const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [city, setCity] = useState('');
+  const [social, setSocial] = useState('');
+  const [software, setSoftware] = useState<string[]>([]);
+  const [events, setEvents] = useState<string[]>([]);
+  const [library, setLibrary] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-// ─── FORM OPTIONS ────────────────────────────────────────────
-const DJ_SOFTWARE = ["Serato", "VirtualDJ", "Rekordbox", "Traktor", "Other"];
-const EVENT_TYPES = ["Weddings", "Corporate", "Club", "Private Events", "Festivals", "Multicultural"];
-const LIBRARY_SIZES = ["Under 5K tracks", "5K – 15K", "15K – 30K", "30K – 50K", "50K+"];
-const GENRES = [
-  "Hip-Hop & R&B", "House", "Pop", "Dance / EDM", "Latin",
-  "Bollywood", "Punjabi", "Desi Fusion", "Afrobeats", "Reggaeton",
-  "Rock", "Country", "Dancehall", "Amapiano", "Top 40 / Open Format",
-];
-
-// ─── FEATURES ────────────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: "🎯",
-    title: "Client Playlist Matching",
-    desc: "Paste a Spotify playlist → instantly see what you own, what's missing, and get vibe-matched recommendations from YOUR library.",
-  },
-  {
-    icon: "📊",
-    title: "Gig Intelligence",
-    desc: "Every gig makes MIP smarter. Track what's rising, what's signature, what crowds respond to — across weddings, clubs, and corporate.",
-  },
-  {
-    icon: "🏷️",
-    title: "Ceremony-Aware Tags",
-    desc: "Sangeet, Baraat, Cocktail Hour — tags that understand your workflow. Auto-generated from your playlists and crates.",
-  },
-  {
-    icon: "💎",
-    title: "Freshness Score",
-    desc: "Every track scored 0-100 on gig-readiness. Know what's crowd-tested, set-ready, trending, and still fresh.",
-  },
-  {
-    icon: "🔒",
-    title: "Local-First Trust",
-    desc: "Your music stays on your machine. No cloud dependency. Music.app is source of truth. MIP reads, enriches, writes back.",
-  },
-  {
-    icon: "🧠",
-    title: "Gets Smarter Every Weekend",
-    desc: "Setlist segments, crowd demographics, event context — MIP learns from every gig. The future: ask MIP to build your next set.",
-  },
-];
-
-const STATS = [
-  { value: "50000", display: "50,000+", label: "Tracks supported" },
-  { value: "560", display: "560+", label: "Playlists synced" },
-  { value: "500", display: "500+", label: "Sessions analyzed" },
-  { value: "30", display: "30MB", label: "App size" },
-];
-
-// ─── COMPONENTS ──────────────────────────────────────────────
-
-function AnimatedCounter({ stat }: { stat: { value: string; display: string; label: string } }) {
-  const [text, setText] = useState("");
-  const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const target = parseInt(stat.value);
-          const duration = 1400;
-          const steps = 35;
-          const increment = target / steps;
-          let current = 0;
-          const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-              setText(stat.display);
-              clearInterval(timer);
-            } else {
-              const val = Math.floor(current);
-              if (target >= 1000) {
-                setText(val.toLocaleString());
-              } else {
-                setText(String(val));
-              }
-            }
-          }, duration / steps);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [stat]);
-
-  return <span ref={ref}>{text || stat.display}</span>;
-}
-
-function Chip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        padding: "7px 16px",
-        borderRadius: 20,
-        border: `1.5px solid ${selected ? BRAND.accent : "rgba(255,255,255,0.10)"}`,
-        background: selected ? BRAND.accentGlow : "transparent",
-        color: selected ? BRAND.accentLight : "rgba(255,255,255,0.50)",
-        fontSize: 13,
-        fontWeight: 400,
-        cursor: "pointer",
-        transition: "all 0.2s ease",
-        fontFamily: "'League Spartan', sans-serif",
-        letterSpacing: "0.005em",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
-function Input({ label, type = "text", placeholder, value, onChange, required }: { label: string; type?: string; placeholder?: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; required?: boolean }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{
-        fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.40)",
-        letterSpacing: "0.06em", textTransform: "uppercase",
-        fontFamily: "'League Spartan', sans-serif",
-      }}>
-        {label} {required && <span style={{ color: BRAND.accent }}>*</span>}
-      </label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        style={{
-          padding: "12px 14px",
-          borderRadius: 8,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          color: "#e4e4e7",
-          fontSize: 14,
-          fontFamily: "'League Spartan', sans-serif",
-          fontWeight: 400,
-          outline: "none",
-          transition: "border-color 0.2s ease, background 0.2s ease",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-        onFocus={(e) => { e.target.style.borderColor = BRAND.accent; e.target.style.background = "rgba(224,107,142,0.03)"; }}
-        onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; e.target.style.background = "rgba(255,255,255,0.03)"; }}
-      />
-    </div>
-  );
-}
-
-// ─── MAIN PAGE ───────────────────────────────────────────────
-
-export default function MIPBetaLanding() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    city: "",
-    social: "",
-    software: [] as string[],
-    events: [] as string[],
-    genres: [] as string[],
-    librarySize: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLElement>(null);
-
-  const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
-
-  const toggleChip = (field: "software" | "events" | "genres", value: string) => {
-    setForm((p) => ({
-      ...p,
-      [field]: p[field].includes(value) ? p[field].filter((v: string) => v !== value) : [...p[field], value],
-    }));
+  const toggleMulti = (arr: string[], setArr: (v: string[]) => void, val: string) => {
+    setArr(arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.email) return;
-    setSubmitting(true);
+  const handleSubmit = async () => {
+    if (!firstName || !lastName || !email) {
+      setErrorMsg('Please fill in your name and email.');
+      return;
+    }
+    setFormState('submitting');
+    setErrorMsg('');
 
-    // ── SUPABASE INTEGRATION ──
-    // Replace with your Supabase URL + anon key:
-    const SUPABASE_URL = "https://xkaoyynjymbmkiqzcyhb.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrYW95eW5qeW1ibWtpcXpjeWhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MTEyOTcsImV4cCI6MjA4OTI4NzI5N30.-bG7D186hmfaWxr07j866ngYFY-OgsZNTir0jVR4060";
-    await fetch(`${SUPABASE_URL}/rest/v1/beta_signups`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        city: form.city,
-        social_handle: form.social,
-        dj_software: form.software,
-        event_types: form.events,
-        genres: form.genres,
-        library_size: form.librarySize,
+    try {
+      const { error } = await supabase.from('beta_signups').insert({
+        first_name: firstName,
+        last_name: lastName,
+        email: email.toLowerCase().trim(),
+        city: city || null,
+        social_handle: social || null,
+        dj_software: software,
+        event_types: events,
+        library_size: library || null,
         signed_up_at: new Date().toISOString(),
-      }),
-    });
+      });
 
-    await new Promise((r) => setTimeout(r, 1200));
-    setSubmitting(false);
-    setSubmitted(true);
+      if (error) {
+        if (error.code === '23505') {
+          setErrorMsg('This email is already on the beta list!');
+          setFormState('idle');
+        } else {
+          throw error;
+        }
+      } else {
+        setFormState('success');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setErrorMsg('Something went wrong. Please try again.');
+      setFormState('idle');
+    }
   };
 
+  const softwareOptions = ['Serato', 'VirtualDJ', 'Rekordbox', 'Traktor', 'Other'];
+  const eventOptions = ['Weddings', 'Corporate', 'Club', 'Private Events', 'Festivals'];
+  const libraryOptions = ['<5K', '5K–15K', '15K–30K', '30K–50K', '50K+'];
+
   return (
-    <div style={{
-      minHeight: "100vh", background: "#09090b", color: "#e4e4e7",
-      fontFamily: "'League Spartan', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
-      overflowX: "hidden",
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@200;300;400;500;600;700&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        @keyframes heroGlow {
-          0%, 100% { opacity: 0.35; transform: scale(1) rotate(0deg); }
-          50% { opacity: 0.55; transform: scale(1.08) rotate(1deg); }
-        }
-        
-        @keyframes heroGlow2 {
-          0%, 100% { opacity: 0.2; transform: scale(1) rotate(0deg); }
-          50% { opacity: 0.35; transform: scale(1.04) rotate(-1deg); }
-        }
-        
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-12px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(224, 107, 142, 0.35); }
-          50% { box-shadow: 0 0 0 10px rgba(224, 107, 142, 0); }
-        }
-        
-        @keyframes subtleDrift {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        
-        .hero-section { animation: fadeUp 0.7s ease both; }
-        .feature-card { animation: fadeUp 0.5s ease both; }
-        .feature-card:nth-child(1) { animation-delay: 0.05s; }
-        .feature-card:nth-child(2) { animation-delay: 0.1s; }
-        .feature-card:nth-child(3) { animation-delay: 0.15s; }
-        .feature-card:nth-child(4) { animation-delay: 0.2s; }
-        .feature-card:nth-child(5) { animation-delay: 0.25s; }
-        .feature-card:nth-child(6) { animation-delay: 0.3s; }
-        
-        .stat-item { animation: slideIn 0.5s ease both; }
-        .stat-item:nth-child(1) { animation-delay: 0.15s; }
-        .stat-item:nth-child(2) { animation-delay: 0.25s; }
-        .stat-item:nth-child(3) { animation-delay: 0.35s; }
-        .stat-item:nth-child(4) { animation-delay: 0.45s; }
-        
-        .cta-btn { transition: all 0.25s ease; }
-        .cta-btn:hover { transform: translateY(-2px) !important; box-shadow: 0 12px 40px rgba(224, 107, 142, 0.25) !important; }
-        .feature-card { transition: all 0.3s ease; }
-        .feature-card:hover { border-color: rgba(224, 107, 142, 0.2) !important; background: rgba(224, 107, 142, 0.03) !important; transform: translateY(-3px); }
-        
-        .nav-handle { transition: color 0.2s ease; }
-        .nav-handle:hover { color: rgba(255,255,255,0.6) !important; }
-        
-        ::selection { background: rgba(224, 107, 142, 0.3); }
-        
-        input::placeholder { color: rgba(255,255,255,0.2); }
-        
-        @media (max-width: 768px) {
-          .features-grid { grid-template-columns: 1fr !important; }
-          .stats-row { flex-direction: column !important; gap: 20px !important; }
-          .hero-title { font-size: 36px !important; }
-          .form-grid { grid-template-columns: 1fr !important; }
-          .hero-pad { padding: 72px 20px 48px !important; }
-        }
-      `}</style>
-
-      {/* ─── HERO GLOW (dual orbs) ─── */}
-      <div style={{
-        position: "fixed", top: "-35%", left: "45%", transform: "translateX(-50%)",
-        width: "700px", height: "700px", borderRadius: "50%",
-        background: `radial-gradient(circle, rgba(224,107,142,0.12) 0%, transparent 65%)`,
-        animation: "heroGlow 10s ease-in-out infinite", pointerEvents: "none", zIndex: 0,
-      }} />
-      <div style={{
-        position: "fixed", top: "-20%", left: "60%", transform: "translateX(-50%)",
-        width: "500px", height: "500px", borderRadius: "50%",
-        background: `radial-gradient(circle, rgba(201,82,122,0.08) 0%, transparent 60%)`,
-        animation: "heroGlow2 12s ease-in-out infinite", pointerEvents: "none", zIndex: 0,
-      }} />
-
-      {/* ─── NAV ─── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 50, padding: "14px 28px",
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
-        backdropFilter: "blur(24px) saturate(1.2)", background: "rgba(9,9,11,0.82)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: 6,
-            background: `linear-gradient(135deg, ${BRAND.accent}, ${BRAND.accentDark})`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 11, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em",
-            fontFamily: "'League Spartan', sans-serif",
-          }}>M</div>
-          <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: "-0.03em", color: "#f4f4f5" }}>{BRAND.name}</span>
-          <span style={{
-            fontSize: 12, color: "rgba(255,255,255,0.28)", letterSpacing: "-0.01em", fontWeight: 300,
-          }}>by</span>
-          <a
-            href="https://instagram.com/djofresh"
-            target="_blank"
-            rel="noopener"
-            className="nav-handle"
-            style={{
-              fontSize: 12, color: "rgba(255,255,255,0.40)", textDecoration: "none",
-              fontWeight: 400, letterSpacing: "-0.01em",
-            }}
-          >{BRAND.handle}</a>
-          <span style={{
-            fontSize: 9, color: BRAND.accent, marginLeft: 4,
-            letterSpacing: "0.1em", fontWeight: 600, textTransform: "uppercase",
-            padding: "2px 6px", borderRadius: 4,
-            background: BRAND.accentGlow, border: `1px solid rgba(224,107,142,0.15)`,
-          }}>BETA</span>
+    <>
+      {/* NAV */}
+      <nav>
+        <div className="nav-logo">Cue<span>Nora</span></div>
+        <div className="nav-links">
+          <a href="#problems">The Problem</a>
+          <a href="#pillars">Features</a>
+          <a href="#nora">Ask Nora</a>
+          <a href="#waitlist" className="nav-cta">Join the Beta</a>
         </div>
-        <button
-          onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="cta-btn"
-          style={{
-            padding: "8px 20px", borderRadius: 8, border: "none",
-            background: BRAND.accent, color: "#fff", fontSize: 13,
-            fontWeight: 500, cursor: "pointer", fontFamily: "'League Spartan', sans-serif",
-            letterSpacing: "-0.01em",
-          }}
-        >{BRAND.cta}</button>
       </nav>
 
-      {/* ─── HERO ─── */}
-      <section className="hero-section hero-pad" style={{
-        position: "relative", zIndex: 1,
-        maxWidth: 860, margin: "0 auto", padding: "96px 24px 56px",
-        textAlign: "center",
-      }}>
-        <div style={{
-          display: "inline-block", padding: "5px 14px", borderRadius: 20,
-          background: BRAND.accentGlow, border: `1px solid rgba(224,107,142,0.18)`,
-          fontSize: 12, fontWeight: 400, color: BRAND.accentLight,
-          marginBottom: 28, letterSpacing: "0.01em",
-        }}>
-          Now accepting beta applications
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-badge">
+          <span className="dot" />
+          Built by <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">@djofresh</a>&nbsp;·&nbsp;Battle-tested on real gigs
         </div>
+        <h1>Your DJ software plays your music.<br /><span className="highlight">Nora understands it.</span></h1>
+        <p className="hero-sub">CueNora is the intelligent music library platform for working DJs. Clean your metadata. Mine insights from your library and gig history. Match client playlists to what you actually own. Prep smarter — with data, not guesswork.</p>
+        <p className="hero-tagline">When you prep for a gig — Cue Nora.</p>
+        <div className="hero-ctas">
+          <a href="#waitlist" className="btn-primary">Join the Beta</a>
+          <a href="#pillars" className="btn-secondary">See What Nora Does</a>
+        </div>
+      </section>
 
-        <h1 className="hero-title" style={{
-          fontSize: 54, fontWeight: 300, lineHeight: 1.1,
-          letterSpacing: "-0.04em", marginBottom: 20,
-          color: "rgba(255,255,255,0.92)",
-        }}>
-          Your DJ software cleans metadata.
-          <br />
-          <span style={{
-            background: `linear-gradient(135deg, ${BRAND.accentLight} 0%, ${BRAND.accent} 50%, ${BRAND.accentDark} 100%)`,
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            fontWeight: 600,
-          }}>{BRAND.name} understands it.</span>
-        </h1>
+      {/* PAIN POINTS */}
+      <section className="pain-section" id="problems">
+        <div className="section-label">Sound familiar?</div>
+        <h2 className="section-title">DJs spend more time managing music than making moments.</h2>
+        <div className="pain-grid">
+          {[
+            { icon: '😤', title: 'Messy metadata everywhere', desc: "Duplicate genres. Inconsistent artist names. Missing BPMs and keys. Your 50K library is a mess and no tool actually fixes it properly.", solve: "Nora cleans, merges, and enriches your metadata from 3 sources" },
+            { icon: '🤷', title: 'No insights from your own library', desc: "You have 50,000 tracks and no idea what's stale, what's rising, what gaps you have, or which tracks actually work at gigs.", solve: "Nora mines your library data and gig history for rich intelligence" },
+            { icon: '📋', title: "Client sends a Spotify playlist and you're on your own", desc: "Manually cross-referencing a 50-song client playlist against your library. Checking for clean edits, intros, versions. It takes hours.", solve: "Nora matches it in seconds with version detection and gap analysis" },
+            { icon: '🧠', title: 'Your gig knowledge lives in your head', desc: "What you played at the last sangeet, which transitions killed, what cleared the floor — it's all memory. Nothing structured. Nothing searchable.", solve: "Nora captures structured gig data and learns from every set you play" },
+            { icon: '📂', title: 'Building playlists from scratch every time', desc: "Every wedding, every corporate gig — you're starting from zero. No recommendations from YOUR catalog based on what actually works.", solve: "Nora recommends from your library based on vibe match, gig history, and tags" },
+            { icon: '🌍', title: 'No tool understands multicultural events', desc: "Sangeet, Baraat, Reception, Cocktail Hour — your DJ software doesn't know these exist. You prep ceremony-specific sets with zero help.", solve: "Nora has ceremony-aware tagging and segment intelligence built in" },
+          ].map((p, i) => (
+            <div className="pain-card" key={i}>
+              <div className="pain-icon">{p.icon}</div>
+              <h3>{p.title}</h3>
+              <p className="pain-desc">{p.desc}</p>
+              <div className="pain-solve">→ {p.solve}</div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        <p style={{
-          fontSize: 17, color: "rgba(255,255,255,0.42)", lineHeight: 1.65,
-          maxWidth: 560, margin: "0 auto 44px", fontWeight: 300,
-          letterSpacing: "-0.01em",
-        }}>
-          {BRAND.subtitle}
-          <br />Client playlists → library matching → gig intelligence → smarter set prep.
+      {/* MANIFESTO */}
+      <section className="manifesto">
+        <p className="manifesto-line">
+          50,000 tracks is not a library. <em>It&apos;s a dataset.</em><br />
+          <span className="nora">Nora</span> mines it, learns from it, and turns it<br />
+          into <em>intelligence you can act on.</em>
         </p>
-
-        {/* ─── STATS ─── */}
-        <div className="stats-row" style={{
-          display: "flex", justifyContent: "center", gap: 52,
-          padding: "28px 0",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
-        }}>
-          {STATS.map((s, i) => (
-            <div key={i} className="stat-item" style={{ textAlign: "center" }}>
-              <div style={{
-                fontSize: 30, fontWeight: 300,
-                color: "#f4f4f5", letterSpacing: "-0.03em",
-                fontVariantNumeric: "tabular-nums",
-              }}>
-                <AnimatedCounter stat={s} />
-              </div>
-              <div style={{
-                fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 4,
-                fontWeight: 400, letterSpacing: "0.02em",
-              }}>
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
 
-      {/* ─── FEATURES ─── */}
-      <section style={{
-        maxWidth: 960, margin: "0 auto", padding: "52px 24px",
-        position: "relative", zIndex: 1,
-      }}>
-        <div style={{ textAlign: "center", marginBottom: 44 }}>
-          <h2 style={{
-            fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em",
-            marginBottom: 8, color: "rgba(255,255,255,0.88)",
-          }}>
-            Built for working DJs
-          </h2>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.32)", fontWeight: 300 }}>
-            Not another Rekordbox clone. The intelligence layer above your performance tools.
-          </p>
-        </div>
-
-        <div className="features-grid" style={{
-          display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12,
-        }}>
-          {FEATURES.map((f, i) => (
-            <div key={i} className="feature-card" style={{
-              padding: "22px 20px", borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.05)",
-              background: "rgba(255,255,255,0.015)",
-              cursor: "default",
-            }}>
-              <div style={{ fontSize: 22, marginBottom: 10 }}>{f.icon}</div>
-              <h3 style={{
-                fontSize: 15, fontWeight: 500, marginBottom: 6,
-                letterSpacing: "-0.02em", color: "rgba(255,255,255,0.85)",
-              }}>{f.title}</h3>
-              <p style={{
-                fontSize: 13, color: "rgba(255,255,255,0.38)", lineHeight: 1.6, fontWeight: 300,
-              }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── DIVIDER ─── */}
-      <div style={{
-        maxWidth: 120, margin: "20px auto 20px", height: 1,
-        background: `linear-gradient(90deg, transparent, ${BRAND.accent}40, transparent)`,
-      }} />
-
-      {/* ─── SIGNUP FORM ─── */}
-      <section ref={formRef} style={{
-        maxWidth: 600, margin: "0 auto", padding: "48px 24px 100px",
-        position: "relative", zIndex: 1,
-      }}>
-        {submitted ? (
-          <div style={{
-            textAlign: "center", padding: "56px 24px",
-            animation: "fadeUp 0.5s ease both",
-          }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 16, margin: "0 auto 20px",
-              background: BRAND.accentGlow, border: `1px solid rgba(224,107,142,0.2)`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 28, animation: "subtleDrift 3s ease-in-out infinite",
-            }}>🎧</div>
-            <h2 style={{
-              fontSize: 28, fontWeight: 300, letterSpacing: "-0.03em",
-              marginBottom: 10, color: "rgba(255,255,255,0.9)",
-            }}>
-              You're on the list.
-            </h2>
-            <p style={{
-              fontSize: 15, color: "rgba(255,255,255,0.42)", lineHeight: 1.65, fontWeight: 300,
-            }}>
-              We'll reach out when your beta invite is ready.
-              <br />Welcome to the future of DJ prep.
-            </p>
-            <div style={{
-              marginTop: 28, padding: "14px 20px", borderRadius: 10,
-              background: BRAND.accentGlow, border: `1px solid rgba(224,107,142,0.12)`,
-              fontSize: 13, color: "rgba(255,255,255,0.5)", fontWeight: 300,
-            }}>
-              Follow <a href="https://instagram.com/djofresh" target="_blank" rel="noopener" style={{ color: BRAND.accentLight, textDecoration: "none", fontWeight: 500 }}>@djofresh</a> for build updates
+      {/* FOUR PILLARS */}
+      <section className="pillars" id="pillars">
+        <div className="section-label">Four pillars of music intelligence</div>
+        <h2 className="section-title">Clean it. Mine it. Match it. Ask Nora.</h2>
+        <p className="section-desc">CueNora isn&apos;t one feature — it&apos;s four integrated systems that make your library, your gig history, and your client workflows dramatically smarter.</p>
+        <div className="pillar-grid">
+          <div className="pillar-card">
+            <div className="pillar-number">01 — Clean</div>
+            <h3>Metadata Intelligence</h3>
+            <p className="pillar-desc">Your library is only as good as its tags. Nora doesn&apos;t just read metadata — she cleans, merges, enriches, and organizes it at scale.</p>
+            <div className="pillar-features">
+              {['Genre cleanup — merge "Hip-Hop" + "Hip Hop" + "Hip-Hop/Rap" in one click', 'Artist cleanup — consolidate name variants across your entire library', '3-source enrichment — MusicBrainz + Discogs + Spotify filling missing data', 'Duplicate detection with DJ-specific normalization (Intro, Clean, Remix aware)', 'Title parser — separates remixer credits, version tags, record pool sources', 'Auto-snapshots before every batch operation — your safety net'].map((f, i) => (
+                <div className="pillar-feat" key={i}><span className="bullet">●</span> {f}</div>
+              ))}
             </div>
           </div>
-        ) : (
-          <>
-            <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{
-                fontSize: 26, fontWeight: 300, letterSpacing: "-0.03em",
-                marginBottom: 8, color: "rgba(255,255,255,0.88)",
-              }}>
-                Request beta access
-              </h2>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.32)", fontWeight: 300 }}>
-                macOS only · Free during beta · Your library stays local
-              </p>
+          <div className="pillar-card">
+            <div className="pillar-number">02 — Mine</div>
+            <h3>Library &amp; Gig Insights</h3>
+            <p className="pillar-desc">Your library and gig history are a goldmine of patterns. Nora mines them so you can see what no other DJ tool shows you.</p>
+            <div className="pillar-features">
+              {['Track Intelligence — rising, signature, declining, and deep cuts from real gig data', 'Freshness Score — every track rated 0-100 on gig readiness', 'Dashboard analytics — BPM distribution, genre coverage, key gaps, play frequency', 'Playlist intelligence — staple tracks, orphans, overlap matrix, missing versions', 'Discover — forgotten gems, never-played tracks, genre roulette, deep in the crate', 'Trending from YouTube, Spotify, Billboard, Shazam — cross-referenced with your library'].map((f, i) => (
+                <div className="pillar-feat" key={i}><span className="bullet">●</span> {f}</div>
+              ))}
             </div>
+          </div>
+          <div className="pillar-card">
+            <div className="pillar-number">03 — Match</div>
+            <h3>Playlist Matching &amp; Building</h3>
+            <p className="pillar-desc">Client playlists, trending charts, vibe analysis — Nora matches them all to what you actually own and builds set-ready crates.</p>
+            <div className="pillar-features">
+              {['Spotify playlist → instant library match with fuzzy scoring (0-100)', 'Multi-version display — see Clean, Dirty, Intro, Extended, Remix variants', 'Vibe analysis — radar chart profiling + 30 smart recommendations from YOUR catalog', "Gap analysis — what's missing, with YouTube links to find and download", 'Export matched playlists directly to Music.app with one click', 'Keyboard review mode — arrow keys navigate, A/R approve/reject at speed'].map((f, i) => (
+                <div className="pillar-feat" key={i}><span className="bullet">●</span> {f}</div>
+              ))}
+            </div>
+          </div>
+          <div className="pillar-card">
+            <div className="pillar-number">04 — Ask</div>
+            <h3>Ask Nora — AI Intelligence</h3>
+            <p className="pillar-desc">The AI layer that ties it all together. Nora learns from your library, your gigs, your clients, and your decisions to give you answers no other tool can.</p>
+            <div className="pillar-features">
+              {['"Build me a cocktail hour set for 200 guests, ages 25-35"', 'Recommendations weighted by YOUR crowd-tested data and gig history', "Decision Intelligence Logger — every prep choice trains Nora's understanding", 'Custom tags with provenance — Nora knows WHERE every tag came from', 'Event intelligence — structured ceremony, venue, crowd data per gig', 'The more you use CueNora, the smarter Nora gets. That\'s the flywheel.'].map((f, i) => (
+                <div className="pillar-feat" key={i}><span className="bullet">●</span> {f}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-              {/* Name + Email */}
-              <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <Input label="Name" placeholder="Your name" value={form.name} onChange={(e) => update("name", e.target.value)} required />
-                <Input label="Email" type="email" placeholder="you@email.com" value={form.email} onChange={(e) => update("email", e.target.value)} required />
+      {/* ASK NORA TERMINAL */}
+      <section className="ask-nora" id="nora">
+        <div className="ask-nora-label">Ask Nora</div>
+        <h2 className="ask-nora-title">See Nora in action.</h2>
+        <p className="ask-nora-desc">Nora knows your library, your gig history, and your clients. Just ask.</p>
+        <div className="nora-terminal">
+          <div className="nora-terminal-header">
+            <div className="dots"><div className="dot-r" /><div className="dot-y" /><div className="dot-g" /></div>
+            <span>Ask Nora</span>
+            <div style={{ width: 42 }} />
+          </div>
+          <div className="nora-messages">
+            <div className="nora-msg">
+              <div className="avatar avatar-user">DJ</div>
+              <div className="text">Nora, I have a sangeet this Saturday. 200 guests, ages 25-35. What should I prep?</div>
+            </div>
+            <div className="nora-msg">
+              <div className="avatar avatar-nora">N</div>
+              <div className="text">
+                <strong>Based on your last 12 sangeet sets, this client&apos;s playlist, and your library:</strong><br /><br />
+                You own 34 of their 47 requested tracks. I found 8 better versions in your library (intros and clean edits). 5 tracks are missing — I&apos;ve queued YouTube links for download.<br /><br />
+                Your top sangeet openers from past gigs: &quot;Kala Chashma&quot; → &quot;London Thumakda&quot; → &quot;Gallan Goodiyaan.&quot; That sequence has a 92% crowd-tested rating across 4 events.<br /><br />
+                3 tracks in your library are tagged &quot;Sangeet&quot; but you haven&apos;t played them in 6+ months. Want me to add them as deep cuts?<br /><br />
+                Shall I build the prep crate?
               </div>
+            </div>
+          </div>
+          <div className="nora-input">
+            <input type="text" placeholder="Ask Nora anything about your library..." disabled />
+            <button className="send">↑</button>
+          </div>
+        </div>
+      </section>
 
-              {/* City + Social */}
-              <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <Input label="City" placeholder="Where you're based" value={form.city} onChange={(e) => update("city", e.target.value)} />
-                <Input label="Social Handle" placeholder="@yourhandle" value={form.social} onChange={(e) => update("social", e.target.value)} />
+      {/* SPOTIFY/NORA CALLOUT */}
+      <section className="manifesto" style={{ padding: '100px 24px' }}>
+        <p className="manifesto-line" style={{ fontSize: 'clamp(18px, 2.5vw, 26px)' }}>
+          Spotify knows what people <em>listen to.</em><br />
+          <span className="nora">Nora</span> knows what makes people <em>dance.</em>
+        </p>
+      </section>
+
+      {/* THE LOOP */}
+      <section className="loop">
+        <h2 className="loop-title">The intelligence loop.</h2>
+        <div className="loop-steps">
+          {[
+            { num: '01', title: 'Nora reads your library', desc: '50K+ tracks analyzed. Metadata cleaned. BPM, key, genre, versions, gaps — all mined from day one.' },
+            { num: '02', title: 'Client sends playlist', desc: 'Spotify link drops in. Nora matches it in seconds with version detection and gap analysis.' },
+            { num: '03', title: 'You play the gig', desc: 'Nora captures what you played, for whom, in what order, and in which ceremony segment.' },
+            { num: '04', title: 'Nora learns', desc: 'Every gig feeds the intelligence. Your library data gets richer. Your prep gets faster.' },
+          ].map((s, i) => (
+            <div className="loop-step" key={i}>
+              <div className="number">{s.num}</div>
+              <h4>{s.title}</h4>
+              <p>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* STATS */}
+      <section className="stats">
+        {[
+          { num: '50K+', label: 'Tracks managed' },
+          { num: '560+', label: 'Playlists synced' },
+          { num: '500+', label: 'Gig sessions imported' },
+          { num: '30MB', label: 'Desktop app — no bloat' },
+        ].map((s, i) => (
+          <div key={i}><div className="stat-number">{s.num}</div><div className="stat-label">{s.label}</div></div>
+        ))}
+      </section>
+
+      {/* POSITIONING */}
+      <section className="positioning">
+        <div className="pos-grid">
+          <div className="pos-col">
+            <h3>CueNora is not</h3>
+            {['DJ performance software', 'A Serato or Rekordbox replacement', 'A streaming service', 'An "AI for DJs" gimmick', 'Cloud-dependent'].map((p, i) => (
+              <div className="pos-item" key={i}><span className="x">✕</span> {p}</div>
+            ))}
+          </div>
+          <div className="pos-col">
+            <h3 className="is-h">CueNora is</h3>
+            {['An intelligent music library management platform', 'A data engine that mines intelligence from your collection', 'A metadata cleaner that actually fixes your library', 'A playlist matcher that builds set-ready crates from any source', 'An AI prep brain that learns from every gig you play', 'Local-first — your music, your data, your machine', 'Built by a working DJ, for working DJs'].map((p, i) => (
+              <div className="pos-item" key={i}><span className="check">✓</span> {p}</div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* BETA FORM */}
+      <section className="final-cta" id="waitlist">
+        <h2>Ready to Cue Nora?</h2>
+        <p>Join the beta. Be one of the first 100 DJs to experience intelligent set prep.</p>
+
+        {formState === 'success' ? (
+          <div className="form-success">
+            <div className="checkmark">✓</div>
+            <h3>You&apos;re in, {firstName}.</h3>
+            <p>Welcome to the CueNora beta. We&apos;ll be in touch with early access soon.<br />Nora&apos;s already warming up.</p>
+            <a href="https://instagram.com/djofresh" target="_blank" rel="noopener" className="follow-btn">Follow @djofresh for updates</a>
+          </div>
+        ) : (
+          <div className="waitlist-form">
+            <div className="form-row">
+              <div className="form-group">
+                <label>First Name *</label>
+                <input type="text" placeholder="Omar" value={firstName} onChange={e => setFirstName(e.target.value)} style={{ borderColor: errorMsg && !firstName ? '#ef4444' : '' }} />
               </div>
-
-              {/* DJ Software */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{
-                  fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.40)",
-                  letterSpacing: "0.06em", textTransform: "uppercase",
-                  fontFamily: "'League Spartan', sans-serif",
-                }}>
-                  DJ Software
-                </label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {DJ_SOFTWARE.map((s) => (
-                    <Chip key={s} label={s} selected={form.software.includes(s)} onClick={() => toggleChip("software", s)} />
-                  ))}
-                </div>
+              <div className="form-group">
+                <label>Last Name *</label>
+                <input type="text" placeholder="Fresh" value={lastName} onChange={e => setLastName(e.target.value)} style={{ borderColor: errorMsg && !lastName ? '#ef4444' : '' }} />
               </div>
-
-              {/* Event Types */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{
-                  fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.40)",
-                  letterSpacing: "0.06em", textTransform: "uppercase",
-                  fontFamily: "'League Spartan', sans-serif",
-                }}>
-                  What events do you play?
-                </label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {EVENT_TYPES.map((t) => (
-                    <Chip key={t} label={t} selected={form.events.includes(t)} onClick={() => toggleChip("events", t)} />
-                  ))}
-                </div>
+            </div>
+            <div className="form-group full">
+              <label>Email *</label>
+              <input type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} style={{ borderColor: errorMsg && !email ? '#ef4444' : '' }} />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>City</label>
+                <input type="text" placeholder="New York" value={city} onChange={e => setCity(e.target.value)} />
               </div>
-
-              {/* Genres */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{
-                  fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.40)",
-                  letterSpacing: "0.06em", textTransform: "uppercase",
-                  fontFamily: "'League Spartan', sans-serif",
-                }}>
-                  Favorite Genres
-                </label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {GENRES.map((g) => (
-                    <Chip key={g} label={g} selected={form.genres.includes(g)} onClick={() => toggleChip("genres", g)} />
-                  ))}
-                </div>
+              <div className="form-group">
+                <label>Social Handle</label>
+                <input type="text" placeholder="@djofresh" value={social} onChange={e => setSocial(e.target.value)} />
               </div>
-
-              {/* Library Size */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{
-                  fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.40)",
-                  letterSpacing: "0.06em", textTransform: "uppercase",
-                  fontFamily: "'League Spartan', sans-serif",
-                }}>
-                  Library size
-                </label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {LIBRARY_SIZES.map((s) => (
-                    <Chip key={s} label={s} selected={form.librarySize === s} onClick={() => update("librarySize", s)} />
-                  ))}
-                </div>
+            </div>
+            <div className="form-group full">
+              <label>DJ Software</label>
+              <div className="pill-group">
+                {softwareOptions.map(s => (
+                  <button key={s} className={`pill ${software.includes(s) ? 'active' : ''}`} onClick={() => toggleMulti(software, setSoftware, s)}>{s}</button>
+                ))}
               </div>
-
-              <button
-                type="submit"
-                disabled={submitting || !form.name || !form.email}
-                className="cta-btn"
-                style={{
-                  padding: "14px 32px", borderRadius: 10, border: "none",
-                  background: (!form.name || !form.email)
-                    ? "rgba(255,255,255,0.06)"
-                    : `linear-gradient(135deg, ${BRAND.accent}, ${BRAND.accentDark})`,
-                  color: (!form.name || !form.email) ? "rgba(255,255,255,0.2)" : "#fff",
-                  fontSize: 15, fontWeight: 500,
-                  cursor: (!form.name || !form.email) ? "not-allowed" : "pointer",
-                  fontFamily: "'League Spartan', sans-serif", marginTop: 4, letterSpacing: "-0.01em",
-                  animation: (form.name && form.email) ? "pulse 2.5s ease-in-out infinite" : "none",
-                }}
-              >
-                {submitting ? "Submitting..." : BRAND.cta}
-              </button>
-
-              <p style={{
-                fontSize: 11, color: "rgba(255,255,255,0.18)", textAlign: "center", fontWeight: 300,
-              }}>
-                No spam. Just a beta invite when it's ready.
-              </p>
-            </form>
-          </>
+            </div>
+            <div className="form-group full">
+              <label>What Events Do You Play?</label>
+              <div className="pill-group">
+                {eventOptions.map(e => (
+                  <button key={e} className={`pill ${events.includes(e) ? 'active' : ''}`} onClick={() => toggleMulti(events, setEvents, e)}>{e}</button>
+                ))}
+              </div>
+            </div>
+            <div className="form-group full">
+              <label>Library Size</label>
+              <div className="pill-group">
+                {libraryOptions.map(l => (
+                  <button key={l} className={`pill ${library === l ? 'active' : ''}`} onClick={() => setLibrary(library === l ? '' : l)}>{l}</button>
+                ))}
+              </div>
+            </div>
+            <button className="btn-primary submit-btn" onClick={handleSubmit} disabled={formState === 'submitting'}>
+              {formState === 'submitting' ? 'Joining...' : 'Join the Beta'}
+            </button>
+            <p className="form-note">Beta access for the first 100 DJs. Founding member pricing locked in for life.</p>
+            {errorMsg && <p className="form-error">{errorMsg}</p>}
+          </div>
         )}
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer style={{
-        padding: "20px 28px", borderTop: "1px solid rgba(255,255,255,0.04)",
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        position: "relative", zIndex: 1, flexWrap: "wrap", gap: 12,
-      }}>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", fontWeight: 300 }}>
-          © 2026 FRSH GROUP LLC
+      {/* FOOTER */}
+      <footer>
+        <div className="left">
+          <span>CueNora</span> — Built by <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">@djofresh</a> · A FRSH GROUP LLC product
         </div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", fontWeight: 300 }}>
-          Built by{" "}
-          <a href="https://instagram.com/djofresh" target="_blank" rel="noopener" style={{ color: "rgba(255,255,255,0.35)", textDecoration: "none" }}>
-            DJ O Fresh
-          </a>
+        <div className="right">
+          <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">Instagram</a>
+          <a href="#">Twitter</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
