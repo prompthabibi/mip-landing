@@ -11,8 +11,8 @@
   --text-secondary: rgba(255,255,255,0.55);
   --text-tertiary: rgba(255,255,255,0.3);
   --border: rgba(255,255,255,0.06);
-  --nora-cyan: #22d3ee;
-  --nora-cyan-dim: rgba(34,211,238,0.08);
+  --habibi-cyan: #22d3ee;
+  --habibi-cyan-dim: rgba(34,211,238,0.08);
   --success: #22c55e;
   --warning: #eab308;
   --error: #ef4444;
@@ -47,7 +47,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48
 .hero-badge .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
 .hero-badge a { color: var(--accent-light); text-decoration: none; }
 .hero h1 { font-size: clamp(42px, 6vw, 72px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; max-width: 800px; margin-bottom: 24px; animation: fadeInUp 0.8s ease 0.1s both; }
-.hero h1 .highlight { background: linear-gradient(135deg, var(--accent) 0%, var(--nora-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero h1 .highlight { background: linear-gradient(135deg, var(--accent) 0%, var(--habibi-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .hero-sub { font-size: clamp(17px, 2vw, 20px); font-weight: 300; color: var(--text-secondary); max-width: 580px; line-height: 1.6; margin-bottom: 48px; animation: fadeInUp 0.8s ease 0.2s both; }
 .hero-tagline { font-family: var(--font-mono); font-size: 14px; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 48px; animation: fadeInUp 0.8s ease 0.25s both; }
 .hero-ctas { display: flex; gap: 16px; animation: fadeInUp 0.8s ease 0.3s both; }
@@ -69,13 +69,13 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48
 .pain-card .pain-icon { font-size: 20px; margin-bottom: 12px; }
 .pain-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
 .pain-card .pain-desc { font-size: 13px; color: var(--text-tertiary); line-height: 1.5; font-weight: 300; margin-bottom: 12px; }
-.pain-card .pain-solve { font-size: 12.5px; color: var(--nora-cyan); font-weight: 500; }
+.pain-card .pain-solve { font-size: 12.5px; color: var(--habibi-cyan); font-weight: 500; }
 
 /* =================== MANIFESTO =================== */
 .manifesto { padding: 80px 24px; text-align: center; }
 .manifesto-line { font-size: clamp(24px, 3.5vw, 40px); font-weight: 300; line-height: 1.5; max-width: 900px; margin: 0 auto; color: var(--text-secondary); }
 .manifesto-line em { font-style: normal; color: var(--text-primary); font-weight: 500; }
-.manifesto-line .nora { color: var(--nora-cyan); font-weight: 500; }
+.manifesto-line .habibi { color: var(--habibi-cyan); font-weight: 500; }
 
 /* =================== PILLARS =================== */
 .pillars { padding: 120px 24px; max-width: 1100px; margin: 0 auto; }
@@ -87,7 +87,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48
 .pillar-card:hover { border-color: rgba(255,255,255,0.1); transform: translateY(-2px); }
 .pillar-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
 .pillar-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), transparent); }
-.pillar-card:nth-child(2)::before { background: linear-gradient(90deg, var(--nora-cyan), transparent); }
+.pillar-card:nth-child(2)::before { background: linear-gradient(90deg, var(--habibi-cyan), transparent); }
 .pillar-card:nth-child(3)::before { background: linear-gradient(90deg, var(--success), transparent); }
 .pillar-card:nth-child(4)::before { background: linear-gradient(90deg, var(--warning), transparent); }
 .pillar-number { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); margin-bottom: 16px; letter-spacing: 0.05em; }
@@ -97,28 +97,28 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48
 .pillar-feat { font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
 .pillar-feat .bullet { color: var(--accent); font-size: 10px; margin-top: 4px; flex-shrink: 0; }
 
-/* =================== ASK NORA =================== */
-.ask-nora { padding: 80px 24px 40px; display: flex; flex-direction: column; align-items: center; }
-.ask-nora-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--nora-cyan); text-transform: uppercase; margin-bottom: 16px; }
-.ask-nora-title { font-size: clamp(28px, 3.5vw, 38px); font-weight: 600; letter-spacing: -0.03em; margin-bottom: 8px; text-align: center; }
-.ask-nora-desc { font-size: 16px; color: var(--text-secondary); max-width: 480px; text-align: center; line-height: 1.6; font-weight: 300; margin-bottom: 48px; }
-.nora-terminal { width: 100%; max-width: 640px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.4); }
-.nora-terminal-header { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
-.nora-terminal-header .dots { display: flex; gap: 6px; }
+/* =================== ASK HABIBI =================== */
+.ask-habibi { padding: 80px 24px 40px; display: flex; flex-direction: column; align-items: center; }
+.ask-habibi-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--habibi-cyan); text-transform: uppercase; margin-bottom: 16px; }
+.ask-habibi-title { font-size: clamp(28px, 3.5vw, 38px); font-weight: 600; letter-spacing: -0.03em; margin-bottom: 8px; text-align: center; }
+.ask-habibi-desc { font-size: 16px; color: var(--text-secondary); max-width: 480px; text-align: center; line-height: 1.6; font-weight: 300; margin-bottom: 48px; }
+.habibi-terminal { width: 100%; max-width: 640px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.4); }
+.habibi-terminal-header { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+.habibi-terminal-header .dots { display: flex; gap: 6px; }
 .dot-r { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
 .dot-y { width: 10px; height: 10px; border-radius: 50%; background: #eab308; }
 .dot-g { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
-.nora-terminal-header span { flex: 1; text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 500; }
-.nora-messages { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
-.nora-msg { display: flex; gap: 12px; align-items: flex-start; }
-.nora-msg .avatar { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.habibi-terminal-header span { flex: 1; text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 500; }
+.habibi-messages { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+.habibi-msg { display: flex; gap: 12px; align-items: flex-start; }
+.habibi-msg .avatar { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 .avatar-user { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(139,124,246,0.2); }
-.avatar-nora { background: var(--nora-cyan-dim); color: var(--nora-cyan); border: 1px solid rgba(34,211,238,0.2); }
-.nora-msg .text { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); padding-top: 4px; }
-.nora-msg .text strong { color: var(--text-primary); font-weight: 500; }
-.nora-input { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border); }
-.nora-input input { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: var(--text-tertiary); font-family: var(--font-display); }
-.nora-input .send { width: 28px; height: 28px; border-radius: 6px; background: var(--nora-cyan); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #0e0e12; font-size: 14px; }
+.avatar-habibi { background: var(--habibi-cyan-dim); color: var(--habibi-cyan); border: 1px solid rgba(34,211,238,0.2); }
+.habibi-msg .text { font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); padding-top: 4px; }
+.habibi-msg .text strong { color: var(--text-primary); font-weight: 500; }
+.habibi-input { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border); }
+.habibi-input input { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: var(--text-tertiary); font-family: var(--font-display); }
+.habibi-input .send { width: 28px; height: 28px; border-radius: 6px; background: var(--habibi-cyan); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #0e0e12; font-size: 14px; }
 
 /* =================== LOOP =================== */
 .loop { padding: 120px 24px; text-align: center; }
