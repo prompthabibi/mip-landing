@@ -89,6 +89,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* THE LOOP */}
+      <section className="loop">
+        <h2 className="loop-title">The intelligence loop.</h2>
+        <div className="loop-steps">
+          {[
+            { num: '01', title: 'Habibi reads your library', desc: '50K+ tracks analyzed. Metadata cleaned. BPM, key, genre, versions, gaps — all mined from day one.' },
+            { num: '02', title: 'Client sends playlist', desc: 'Spotify link drops in. Habibi matches it in seconds with version detection and gap analysis.' },
+            { num: '03', title: 'You play the gig', desc: 'Habibi captures what you played, for whom, in what order, and in which ceremony segment.' },
+            { num: '04', title: 'Habibi learns', desc: 'Every gig feeds the intelligence. Your library data gets richer. Your prep gets faster.' },
+          ].map((s, i) => (
+            <div className="loop-step" key={i}>
+              <div className="number">{s.num}</div>
+              <h4>{s.title}</h4>
+              <p>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* PAIN POINTS */}
       <section className="pain-section" id="problems">
         <div className="section-label">Sound familiar?</div>
@@ -99,8 +118,6 @@ export default function Home() {
             { icon: '🤷', title: 'No insights from your own library', desc: "You have 50,000 tracks and no idea what's stale, what's rising, what gaps you have, or which tracks actually work at gigs.", solve: "Habibi mines your library data and gig history for rich intelligence" },
             { icon: '📋', title: "Client sends a Spotify playlist and you're on your own", desc: "Manually cross-referencing a 50-song client playlist against your library. Checking for clean edits, intros, versions. It takes hours.", solve: "Habibi matches it in seconds with version detection and gap analysis" },
             { icon: '🧠', title: 'Your gig knowledge lives in your head', desc: "What you played at the last sangeet, which transitions killed, what cleared the floor — it's all memory. Nothing structured. Nothing searchable.", solve: "Habibi captures structured gig data and learns from every set you play" },
-            { icon: '📂', title: 'Building playlists from scratch every time', desc: "Every wedding, every corporate gig — you're starting from zero. No recommendations from YOUR catalog based on what actually works.", solve: "Habibi recommends from your library based on vibe match, gig history, and tags" },
-            { icon: '🌍', title: 'No tool understands multicultural events', desc: "Sangeet, Baraat, Reception, Cocktail Hour — your DJ software doesn't know these exist. You prep ceremony-specific sets with zero help.", solve: "Habibi has ceremony-aware tagging and segment intelligence built in" },
           ].map((p, i) => (
             <div className="pain-card" key={i}>
               <div className="pain-icon">{p.icon}</div>
@@ -204,32 +221,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SPOTIFY/HABIBI CALLOUT */}
-      <section className="manifesto" style={{ padding: '100px 24px' }}>
-        <p className="manifesto-line" style={{ fontSize: 'clamp(18px, 2.5vw, 26px)' }}>
-          Spotify knows what people <em>listen to.</em><br />
-          <span className="habibi">Habibi</span> knows what makes people <em>dance.</em>
-        </p>
-      </section>
 
-      {/* THE LOOP */}
-      <section className="loop">
-        <h2 className="loop-title">The intelligence loop.</h2>
-        <div className="loop-steps">
-          {[
-            { num: '01', title: 'Habibi reads your library', desc: '50K+ tracks analyzed. Metadata cleaned. BPM, key, genre, versions, gaps — all mined from day one.' },
-            { num: '02', title: 'Client sends playlist', desc: 'Spotify link drops in. Habibi matches it in seconds with version detection and gap analysis.' },
-            { num: '03', title: 'You play the gig', desc: 'Habibi captures what you played, for whom, in what order, and in which ceremony segment.' },
-            { num: '04', title: 'Habibi learns', desc: 'Every gig feeds the intelligence. Your library data gets richer. Your prep gets faster.' },
-          ].map((s, i) => (
-            <div className="loop-step" key={i}>
-              <div className="number">{s.num}</div>
-              <h4>{s.title}</h4>
-              <p>{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* STATS */}
       <section className="stats">
@@ -335,7 +327,7 @@ export default function Home() {
       {/* FOOTER */}
       <footer>
         <div className="left">
-          <span>CueHabibi</span> — Built by <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">@djofresh</a> · A FRSH GROUP LLC product
+          <span>CueHabibi</span> — Built by <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">@djofresh</a>
         </div>
         <div className="right">
           <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">Instagram</a>
