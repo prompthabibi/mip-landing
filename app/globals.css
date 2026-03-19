@@ -187,7 +187,8 @@ footer .right a:hover { color: var(--text-secondary); }
 
 @media (max-width: 768px) {
   nav { padding: 16px 20px; }
-  .nav-links { display: none; }
+  .nav-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 12px; }
+  nav { flex-wrap: wrap; padding: 12px 20px; }
   .pain-grid { grid-template-columns: 1fr; }
   .pillar-grid { grid-template-columns: 1fr; }
   .loop-steps { flex-direction: column; }
