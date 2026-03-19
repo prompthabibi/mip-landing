@@ -70,6 +70,7 @@ export default function Home() {
           <a href="#problems">The Problem</a>
           <a href="#pillars">Features</a>
           <a href="#habibi">Ask Habibi</a>
+          <a href="/how-its-built">How It's Built</a>
           <a href="#waitlist" className="nav-cta">Join the Beta</a>
         </div>
       </nav>
