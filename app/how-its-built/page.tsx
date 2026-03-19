@@ -61,8 +61,8 @@ export default function HowItIsBuilt() {
         .hib-card p{font-size:13px;color:var(--text2);line-height:1.65}
         .hib-card .tag{display:inline-block;margin-top:10px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;background:rgba(255,255,255,.04);color:var(--text3);letter-spacing:.02em}
 
-        .hib-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin:48px 0;border-top:0.5px solid rgba(255,255,255,.08);border-bottom:0.5px solid rgba(255,255,255,.08);padding:32px 0}
-        .hib-stat{background:var(--bg2);padding:24px;text-align:center}
+        .hib-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:transparent;border-radius:0;overflow:visible;margin:48px 0;border-top:0.5px solid rgba(255,255,255,.08);border-bottom:0.5px solid rgba(255,255,255,.08);padding:32px 0}
+        .hib-stat{background:transparent;padding:24px;text-align:center}
         .hib-stat-val{font-size:28px;font-weight:500;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--text)}
         .hib-stat-val.accent{color:var(--accent)}
         .hib-stat-label{font-size:12px;color:var(--text3);margin-top:4px}
