@@ -29,7 +29,7 @@
     --radius-lg: 16px;
   }
 
-  html { scroll-behavior: smooth; font-size: 16px; }
+  html { scroll-behavior: smooth; font-size: 16px; overflow-x: hidden; }
   body {
     background: var(--bg-deep);
     color: var(--text-primary);
@@ -599,6 +599,9 @@
     .sync-connector { display: none; }
     .form-row { grid-template-columns: 1fr; }
     .hero-ctas { flex-direction: column; width: 100%; max-width: 300px; }
+    .sync-logos { flex-wrap: wrap; }
+    .habibi-queries { width: 100%; }
+    .habibi-query { word-break: break-word; text-align: center; }
     footer { flex-direction: column; gap: 16px; text-align: center; }
     footer .right { justify-content: center; }
   }

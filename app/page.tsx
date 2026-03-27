@@ -10,6 +10,8 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [social, setSocial] = useState('');
   const [city, setCity] = useState('');
+  const [musicManagement, setMusicManagement] = useState<string[]>([]);
+  const [musicManagementOther, setMusicManagementOther] = useState('');
   const [software, setSoftware] = useState<string[]>([]);
   const [events, setEvents] = useState<string[]>([]);
   const [library, setLibrary] = useState('');
@@ -34,6 +36,9 @@ export default function Home() {
         email: email.toLowerCase().trim(),
         city: city || null,
         social_handle: social || null,
+        music_management: musicManagement.includes('Other')
+          ? [...musicManagement.filter(v => v !== 'Other'), ...(musicManagementOther.trim() ? [musicManagementOther.trim()] : ['Other'])]
+          : musicManagement,
         dj_software: software,
         event_types: events,
         library_size: library || null,
@@ -57,6 +62,7 @@ export default function Home() {
     }
   };
 
+  const musicManagementOptions = ['Serato', 'VirtualDJ', 'Rekordbox', 'iTunes/Apple Music', 'Other'];
   const softwareOptions = ['Serato', 'VirtualDJ', 'Rekordbox', 'Other'];
   const eventOptions = ['Weddings', 'Corporate', 'Club', 'Private Events', 'Festivals'];
   const libraryOptions = ['<5K', '5K–15K', '15K–30K', '30K–50K', '50K+'];
@@ -77,7 +83,7 @@ export default function Home() {
       <section className="hero">
         <div className="hero-badge">
           <span className="dot" />
-          Built by <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">@djofresh</a>&nbsp;·&nbsp;Battle-tested on 200+ gigs
+          Built by <a href="https://instagram.com/djofresh" target="_blank" rel="noopener">@djofresh</a>
         </div>
         <h1>
           30,000 tracks. <span className="dim">Half tagged wrong.</span><br />
@@ -370,6 +376,17 @@ export default function Home() {
                 <label>City</label>
                 <input type="text" placeholder="New York" value={city} onChange={e => setCity(e.target.value)} />
               </div>
+            </div>
+            <div className="form-group full">
+              <label>Where do you manage your music?</label>
+              <div className="pill-group">
+                {musicManagementOptions.map(m => (
+                  <button key={m} className={`pill ${musicManagement.includes(m) ? 'active' : ''}`} onClick={() => toggleMulti(musicManagement, setMusicManagement, m)}>{m}</button>
+                ))}
+              </div>
+              {musicManagement.includes('Other') && (
+                <input type="text" placeholder="Tell us what you use" value={musicManagementOther} onChange={e => setMusicManagementOther(e.target.value)} style={{ marginTop: '10px' }} />
+              )}
             </div>
             <div className="form-group full">
               <label>DJ Software</label>
